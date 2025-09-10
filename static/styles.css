@@ -1,0 +1,170 @@
+/* Main Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f5f5f5;
+}
+
+.jumbotron {
+    background-color: #e9ecef;
+    border-radius: 10px;
+}
+
+/* Player Card Styles */
+.player-card {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+
+.player-card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.player-card .player-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.player-card .player-qualification {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    margin-left: 5px;
+}
+
+.player-card .qualification-advanced {
+    background-color: #dc3545;
+    color: white;
+}
+
+.player-card .qualification-intermediate {
+    background-color: #28a745;
+    color: white;
+}
+
+/* Court Styles */
+.court-card {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #fff;
+}
+
+.court-card .court-name {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.court-card .court-type {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    margin-left: 5px;
+}
+
+.court-card .type-advanced {
+    background-color: #dc3545;
+    color: white;
+}
+
+.court-card .type-intermediate {
+    background-color: #28a745;
+    color: white;
+}
+
+.court-players {
+    margin-top: 10px;
+}
+
+/* Queue Styles */
+.queue-container {
+    min-height: 50px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border: 1px dashed #ccc;
+}
+
+.queue-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 8px;
+    margin-bottom: 8px;
+    cursor: grab;
+    transition: all 0.2s ease;
+}
+
+.queue-item:hover {
+    background-color: #f0f0f0;
+}
+
+.queue-item.sortable-ghost {
+    opacity: 0.5;
+}
+
+.queue-position {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    background-color: #6c757d;
+    color: white;
+    border-radius: 50%;
+    margin-right: 10px;
+    font-size: 0.8rem;
+}
+
+/* Inactive Players */
+.player-inactive {
+    opacity: 0.6;
+    background-color: #f8f9fa;
+    border: 1px dashed #ccc;
+}
+
+/* Badges and Buttons */
+.badge-queue {
+    font-size: 0.8rem;
+    padding: 5px 8px;
+}
+
+.btn-icon {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* Action Buttons */
+.player-actions {
+    float: right;
+}
+
+.player-actions button {
+    margin-left: 5px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .court-card, .player-card {
+        padding: 10px;
+    }
+    
+    .player-actions {
+        display: block;
+        float: none;
+        margin-top: 10px;
+    }
+    
+    .player-actions button {
+        margin: 5px 5px 0 0;
+    }
+}
