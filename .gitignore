@@ -1,0 +1,7 @@
+venv
+/alembic
+alembic.ini
+flaske8
+__pycache__
+.env
+.env

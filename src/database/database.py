@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Get database URL from environment or fall back to default SQLite connection
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./test.db")
+DATABASE_URL = os.getenv("DATABASE_URL_LOCAL", "sqlite:///./test.db")
 
 engine = create_engine(
     DATABASE_URL,

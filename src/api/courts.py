@@ -6,19 +6,18 @@ from ..database.database import get_db
 from ..models.models import Court, CourtAssignment, Player
 from ..database import schemas
 
-router = APIRouter(
-    prefix="/api/courts",
+court_router = APIRouter(
     tags=["courts"]
 )
 
-@router.get("/", response_model=List[schemas.Court])
+@court_router.get("/", response_model=List[schemas.Court])
 def get_courts(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """
     Get all courts
     """
     return db.query(Court).offset(skip).limit(limit).all()
 
-@router.post("/", response_model=schemas.Court)
+@court_router.post("/", response_model=schemas.Court)
 def create_court(court: schemas.CourtCreate, db: Session = Depends(get_db)):
     """
     Create a new court
@@ -37,7 +36,7 @@ def create_court(court: schemas.CourtCreate, db: Session = Depends(get_db)):
     db.refresh(db_court)
     return db_court
 
-@router.get("/{court_id}", response_model=schemas.Court)
+@court_router.get("/{court_id}", response_model=schemas.Court)
 def read_court(court_id: int, db: Session = Depends(get_db)):
     """
     Get a specific court by ID
@@ -50,7 +49,7 @@ def read_court(court_id: int, db: Session = Depends(get_db)):
         )
     return db_court
 
-@router.put("/{court_id}", response_model=schemas.Court)
+@court_router.put("/{court_id}", response_model=schemas.Court)
 def update_court(court_id: int, court: schemas.CourtCreate, db: Session = Depends(get_db)):
     """
     Update a court's information
@@ -70,7 +69,7 @@ def update_court(court_id: int, court: schemas.CourtCreate, db: Session = Depend
     db.refresh(db_court)
     return db_court
 
-@router.get("/{court_id}/players", response_model=List[schemas.Player])
+@court_router.get("/{court_id}/players", response_model=List[schemas.Player])
 def get_players_on_court(court_id: int, db: Session = Depends(get_db)):
     """
     Get all players assigned to a specific court
@@ -92,7 +91,7 @@ def get_players_on_court(court_id: int, db: Session = Depends(get_db)):
     
     return players
 
-@router.post("/{court_id}/assign/{player_id}", response_model=schemas.CourtAssignment)
+@court_router.post("/{court_id}/assign/{player_id}", response_model=schemas.CourtAssignment)
 def assign_player_to_court(court_id: int, player_id: int, db: Session = Depends(get_db)):
     """
     Assign a player to a court
@@ -144,7 +143,7 @@ def assign_player_to_court(court_id: int, player_id: int, db: Session = Depends(
     db.refresh(db_assignment)
     return db_assignment
 
-@router.delete("/{court_id}/remove/{player_id}", response_model=schemas.ApiResponse)
+@court_router.delete("/{court_id}/remove/{player_id}", response_model=schemas.ApiResponse)
 def remove_player_from_court(court_id: int, player_id: int, db: Session = Depends(get_db)):
     """
     Remove a player from a court

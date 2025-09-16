@@ -46,9 +46,9 @@ app.add_middleware(
 from .api import players, courts, queue
 
 # Include routers
-app.include_router(players.router)
-app.include_router(courts.router)
-app.include_router(queue.router)
+app.include_router(players.player_router)
+app.include_router(courts.court_router)
+app.include_router(queue.queue_router)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")

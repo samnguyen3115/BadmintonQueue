@@ -1,22 +1,24 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from sqlalchemy import or_
 
 from ..database.database import get_db
-from ..models.models import Player
+from ..database.models import Player, Court, Team
 from ..database import schemas
+templates = Jinja2Templates(directory="templates")
 
-router = APIRouter(
-    prefix="/api/players",
+player_router = APIRouter(
     tags=["players"]
 )
 
-@router.get("/", response_model=List[schemas.Player])
+
+@player_router.get("/", response_model=List[schemas.Player])
 def get_players(
-    skip: int = 0, 
-    limit: int = 100, 
-    active_only: bool = False, 
+    skip: int = 0,
+    limit: int = 100,
+    active_only: bool = False,
     db: Session = Depends(get_db)
 ):
     """
@@ -27,27 +29,22 @@ def get_players(
         query = query.filter(Player.is_active == True)
     return query.offset(skip).limit(limit).all()
 
-@router.post("/", response_model=schemas.Player)
+
+@player_router.post("/", response_model=schemas.Player)
 def create_player(player: schemas.PlayerCreate, db: Session = Depends(get_db)):
-    """
-    Create a new player
-    """
-    # Check if player with same name already exists
-    db_player = db.query(Player).filter(Player.name == player.name).first()
-    if db_player:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Player with name '{player.name}' already exists"
-        )
+    # Check if player already exists
+    existing = db.query(Player).filter(Player.name == player.name).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Player already exists")
     
-    # Create new player
-    db_player = Player(**player.model_dump())
+    db_player = Player(**player.model_dump())  # create Player
     db.add(db_player)
     db.commit()
     db.refresh(db_player)
     return db_player
 
-@router.get("/{player_id}", response_model=schemas.Player)
+
+@player_router.get("/{player_id}", response_model=schemas.Player)
 def read_player(player_id: int, db: Session = Depends(get_db)):
     """
     Get a specific player by ID
@@ -60,8 +57,9 @@ def read_player(player_id: int, db: Session = Depends(get_db)):
         )
     return db_player
 
-@router.put("/{player_id}", response_model=schemas.Player)
-def update_player(player_id: int, player: schemas.PlayerCreate, db: Session = Depends(get_db)):
+
+@player_router.put("/{player_id}", response_model=schemas.Player)
+def update_player_qualification(player_id: int, qualification: str | None = Query(None), db: Session = Depends(get_db)):
     """
     Update a player's information
     """
@@ -71,16 +69,31 @@ def update_player(player_id: int, player: schemas.PlayerCreate, db: Session = De
             status_code=404,
             detail=f"Player with ID {player_id} not found"
         )
-    
-    # Update player attributes
-    for key, value in player.model_dump().items():
-        setattr(db_player, key, value)
-    
+
+    db_player.qualification = qualification
     db.commit()
     db.refresh(db_player)
     return db_player
 
-@router.delete("/{player_id}", response_model=schemas.ApiResponse)
+@player_router.put("/{player_id}", response_model=schemas.Player)
+def update_player_court(player_id: int, court_id: str | None = Query(None), db: Session = Depends(get_db)):
+    """
+    Update a player's information
+    """
+    player = db.query(Player).filter(Player.id == player_id).first()
+    if not player:
+        raise HTTPException(status_code=404, detail=f"Player with ID {player_id} not found")
+    
+    # Optionally, check if court exists
+    court = db.query(Court).filter(Court.id == court_id).first()
+    if not court:
+        raise HTTPException(status_code=404, detail=f"Court with ID {court_id} not found")
+    player.court = court
+    db.commit()
+    db.refresh(player)
+    return player
+
+@player_router.delete("/{player_id}", response_model=schemas.ApiResponse)
 def delete_player(player_id: int, db: Session = Depends(get_db)):
     """
     Delete a player
@@ -91,7 +104,7 @@ def delete_player(player_id: int, db: Session = Depends(get_db)):
             status_code=404,
             detail=f"Player with ID {player_id} not found"
         )
-    
+
     try:
         db.delete(db_player)
         db.commit()
@@ -99,13 +112,14 @@ def delete_player(player_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         success = False
-    
+
     return schemas.ApiResponse(
         success=success,
         message=f"Player with ID {player_id} deleted" if success else "Failed to delete player"
     )
 
-@router.post("/{player_id}/toggle-active", response_model=schemas.Player)
+
+@player_router.post("/{player_id}/toggle-active", response_model=schemas.Player)
 def toggle_player_active(player_id: int, db: Session = Depends(get_db)):
     """
     Toggle a player's active status
@@ -116,35 +130,38 @@ def toggle_player_active(player_id: int, db: Session = Depends(get_db)):
             status_code=404,
             detail=f"Player with ID {player_id} not found"
         )
-    
+
     # Toggle active status
     db_player.is_active = not db_player.is_active
-    
+
     # If player is deactivated, remove from queue and courts
     if not db_player.is_active:
         # These would need to be handled directly in the API file or imported from other modules
         # For now, we'll handle this functionality in the route handlers for those entities
         pass
-    
+
     db.commit()
     db.refresh(db_player)
     return db_player
 
-@router.get("/active/list", response_model=List[schemas.Player])
+
+@player_router.get("/active/list", response_model=List[schemas.Player])
 def get_active_players(db: Session = Depends(get_db)):
     """
     Get all active players
     """
     return db.query(Player).filter(Player.is_active == True).all()
 
-@router.get("/inactive/list", response_model=List[schemas.Player])
+
+@player_router.get("/inactive/list", response_model=List[schemas.Player])
 def get_inactive_players(db: Session = Depends(get_db)):
     """
     Get all inactive players
     """
     return db.query(Player).filter(Player.is_active == False).all()
 
-@router.get("/search/{search_term}", response_model=List[schemas.Player])
+
+@player_router.get("/search/{search_term}", response_model=List[schemas.Player])
 def search_players(search_term: str, db: Session = Depends(get_db)):
     """
     Search for players by name or email

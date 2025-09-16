@@ -13,9 +13,32 @@ class Base(DeclarativeBase):
     })
 
 
-class User(Base):
-    __tablename__ = "users"
+class Player(Base):
+    __tablename__ = "players"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    email: Mapped[str] = mapped_column(String(255), nullable=False)
+    email: Mapped[str] = mapped_column(String(255), nullable=True)
+    qualification : Mapped[str] = mapped_column(String(255), nullable=False)
+    is_active : Mapped[bool] = mapped_column(nullable=False,default=False)
+    
+    court_id: Mapped[int | None] = mapped_column(ForeignKey("courts.id"), nullable=True)
+    court: Mapped["Court"] = relationship("Court", back_populates="players")
+    
+    team_id: Mapped[int | None] = mapped_column(ForeignKey("teams.id"), nullable=True)
+    team: Mapped["Team"] = relationship("Team", back_populates="players")
+    
 
+class Court(Base):
+    __tablename__ = "courts"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    court_type: Mapped[str] = mapped_column(String(255), nullable=False,default= "training")
+    players: Mapped[list["Player"]] = relationship("Player", back_populates="court")
+
+
+class Team(Base):
+    __tablename__ = "teams"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    number: Mapped[str] = mapped_column(String(255), nullable=False)
+    
+    players: Mapped[list["Player"]] = relationship("Player", back_populates="team")
