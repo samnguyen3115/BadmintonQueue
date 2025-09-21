@@ -74,7 +74,7 @@ def add_to_queue(queue_type: str, player_id: int, db: Session = Depends(get_db))
 @queue_router.delete("/{player_id}")
 def remove_from_queue(player_id: int, db: Session = Depends(get_db)):
     """
-    Remove a player from any queue
+    Remove a player from any queue by setting court_id to None
     """
     # Check if player exists
     db_player = db.query(Player).filter(Player.id == player_id).first()
@@ -84,13 +84,13 @@ def remove_from_queue(player_id: int, db: Session = Depends(get_db)):
             detail=f"Player with ID {player_id} not found"
         )
     
-    # For simplicity, we'll just deactivate the player
-    db_player.is_active = False
+    # Remove from court assignment (this puts them back in queue if active)
+    db_player.court_id = None
     db.commit()
     
     return {
         "success": True,
-        "message": "Player removed from queue"
+        "message": "Player removed from court assignment and returned to queue"
     }
 
 @queue_router.put("/{queue_type}/reorder")

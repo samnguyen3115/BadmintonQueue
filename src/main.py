@@ -24,14 +24,44 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Try to create database tables
-try:
-    # Create tables if they don't exist
-    logger.info("Creating database tables...")
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database tables created successfully!")
-except Exception as e:
-    logger.error(f"Error setting up database: {e}")
+# Try to create database tables with better error handling
+def init_database():
+    """Initialize database with retry logic for Railway deployment"""
+    import time
+    max_retries = 5
+    retry_delay = 2
+    
+    for attempt in range(max_retries):
+        try:
+            logger.info(f"Database initialization attempt {attempt + 1}...")
+            
+            # Test database connection
+            with engine.connect() as connection:
+                logger.info("Database connection successful!")
+            
+            # Create tables if they don't exist
+            logger.info("Creating database tables...")
+            Base.metadata.create_all(bind=engine)
+            logger.info("Database tables created successfully!")
+            return True
+            
+        except OperationalError as e:
+            logger.warning(f"Database connection failed (attempt {attempt + 1}): {e}")
+            if attempt < max_retries - 1:
+                logger.info(f"Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+                retry_delay *= 2  # Exponential backoff
+            else:
+                logger.error("Failed to connect to database after all retries")
+                raise e
+        except Exception as e:
+            logger.error(f"Unexpected error during database setup: {e}")
+            raise e
+    
+    return False
+
+# Initialize database
+init_database()
 
 # Configure CORS
 app.add_middleware(

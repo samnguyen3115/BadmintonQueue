@@ -4,8 +4,8 @@ from datetime import datetime
 from enum import Enum
 
 class QualificationType(str, Enum):
-    ADVANCED = "A"
-    INTERMEDIATE = "I"
+    ADVANCED = "advanced"
+    INTERMEDIATE = "intermediate"
 
 class CourtType(str, Enum):
     ADVANCED = "advanced"
@@ -27,6 +27,7 @@ class Player(PlayerBase):
 
 class CourtBase(BaseModel):
     name: str
+    court_type: CourtType = CourtType.INTERMEDIATE
 
 class CourtCreate(CourtBase):
     pass

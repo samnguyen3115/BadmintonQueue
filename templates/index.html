@@ -5,36 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Badminton Queue Management</title>
     <link rel="stylesheet" href="/static/styles.css" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
   </head>
   <body>
     <div class="app-header">
-      <h1>Badminton Queue System</h1>
+      <h1>🏸 Badminton Queue System</h1>
     </div>
 
-    <div class="controls">
-      <button
-        class="btn btn-success"
-        data-toggle="modal"
-        data-target="#addPlayerModal"
-      >
-        <i class="fa fa-plus"></i> Add New Player
-      </button>
-      <button onclick="deletePlayer()" class="btn btn-danger">
-        Delete Player
-      </button>
-      <button onclick="syncWithFirebase()" class="btn btn-sync">
-        Sync with Database
-      </button>
-      <button onclick="startNewSession()" class="btn btn-primary">
-        New Session
-      </button>
-    </div>
+    <div class="app-container">
+      <div class="controls">
+        <button
+          class="btn btn-success"
+          data-toggle="modal"
+          data-target="#addPlayerModal"
+        >
+          + Add Player
+        </button>
+        <button onclick="openPlayerPoolModal()" class="btn btn-info">
+          👥 All Players
+        </button>
+        <button onclick="deletePlayer()" class="btn btn-danger">
+          🗑️ Delete
+        </button>
+        <button onclick="syncWithFirebase()" class="btn btn-secondary">
+          🔄 Sync
+        </button>
+        <button onclick="startNewSession()" class="btn btn-primary">
+          ▶️ New Session
+        </button>
+      </div>
+      
+      <!-- Automation Status Display -->
+      <div class="automation-status">
+        <div class="auto-status-indicator">
+          <span class="status-dot active"></span>
+          <span class="status-text">Auto-Assignment: ACTIVE</span>
+          <span class="last-run" id="last-auto-run">Starting...</span>
+        </div>
+        <button onclick="getCourtStatus()" class="btn btn-info btn-sm">
+          📊 Status
+        </button>
+        <button onclick="showAssignmentRules()" class="btn btn-info btn-sm">
+          ℹ️ Rules
+        </button>
+      </div>
     <div class="layout-container">
-      <div class="main-area">
         <div class="queue-section queue-left">
           <div class="queue-header">
             <h3>Advanced Queue</h3>
@@ -215,7 +229,6 @@
           </div>
           <div id="player-queue-right" class="queue-content"></div>
         </div>
-      </div>
     </div>
 
     <div
@@ -258,7 +271,7 @@
                     type="radio"
                     name="qualification"
                     id="advancedQualification"
-                    value="A"
+                    value="advanced"
                     checked
                   />
                   <label class="form-check-label" for="advancedQualification">
@@ -271,7 +284,7 @@
                     type="radio"
                     name="qualification"
                     id="intermediateQualification"
-                    value="I"
+                    value="intermediate"
                   />
                   <label
                     class="form-check-label"

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from ..database.database import get_db
-from ..models.models import Court, CourtAssignment, Player
+from ..database.models import Court, Player, CourtAssignment
 from ..database import schemas
 
 court_router = APIRouter(
@@ -82,16 +82,12 @@ def get_players_on_court(court_id: int, db: Session = Depends(get_db)):
             detail=f"Court with ID {court_id} not found"
         )
     
-    # Get court assignments and the associated players
-    assignments = db.query(CourtAssignment).filter(CourtAssignment.court_id == court_id).all()
-    player_ids = [assignment.player_id for assignment in assignments]
-    
-    # Get the player objects
-    players = db.query(Player).filter(Player.id.in_(player_ids)).all() if player_ids else []
+    # Get players directly assigned to this court via court_id foreign key
+    players = db.query(Player).filter(Player.court_id == court_id).all()
     
     return players
 
-@court_router.post("/{court_id}/assign/{player_id}", response_model=schemas.CourtAssignment)
+@court_router.post("/{court_id}/assign/{player_id}", response_model=schemas.ApiResponse)
 def assign_player_to_court(court_id: int, player_id: int, db: Session = Depends(get_db)):
     """
     Assign a player to a court
@@ -113,8 +109,8 @@ def assign_player_to_court(court_id: int, player_id: int, db: Session = Depends(
         )
     
     # Check if court already has 4 players
-    assignments = db.query(CourtAssignment).filter(CourtAssignment.court_id == court_id).all()
-    if len(assignments) >= 4:
+    current_players = db.query(Player).filter(Player.court_id == court_id).count()
+    if current_players >= 4:
         raise HTTPException(
             status_code=400,
             detail=f"Court is full (maximum 4 players)"
@@ -129,19 +125,21 @@ def assign_player_to_court(court_id: int, player_id: int, db: Session = Depends(
         )
     
     # Check if player is already assigned to a court
-    player_assignment = db.query(CourtAssignment).filter(CourtAssignment.player_id == player_id).first()
-    if player_assignment:
+    if db_player.court_id is not None:
         raise HTTPException(
             status_code=400,
             detail=f"Player with ID {player_id} is already assigned to a court"
         )
     
-    # Create assignment
-    db_assignment = CourtAssignment(court_id=court_id, player_id=player_id)
-    db.add(db_assignment)
+    # Assign player to court
+    db_player.court_id = court_id
     db.commit()
-    db.refresh(db_assignment)
-    return db_assignment
+    db.refresh(db_player)
+    
+    return schemas.ApiResponse(
+        success=True,
+        message=f"Player {db_player.name} assigned to court {db_court.name}"
+    )
 
 @court_router.delete("/{court_id}/remove/{player_id}", response_model=schemas.ApiResponse)
 def remove_player_from_court(court_id: int, player_id: int, db: Session = Depends(get_db)):
@@ -164,20 +162,17 @@ def remove_player_from_court(court_id: int, player_id: int, db: Session = Depend
             detail=f"Player with ID {player_id} not found"
         )
     
-    # Find the assignment and remove it
-    assignment = db.query(CourtAssignment).filter(
-        CourtAssignment.player_id == player_id,
-        CourtAssignment.court_id == court_id
-    ).first()
-    
-    if assignment:
-        db.delete(assignment)
+    # Check if player is assigned to this court
+    if db_player.court_id == court_id:
+        db_player.court_id = None
         db.commit()
         success = True
+        message = f"Player {db_player.name} removed from court {db_court.name}"
     else:
         success = False
+        message = "Player was not assigned to this court"
     
     return schemas.ApiResponse(
         success=success,
-        message=f"Player removed from court" if success else "Player was not assigned to this court"
+        message=message
     )
