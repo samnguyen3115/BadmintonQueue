@@ -1,453 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Badminton Queue Management</title>
-    <link rel="stylesheet" href="/static/styles.css" />
-  </head>
-  <body>
-    <div class="app-header">
-      <h1>🏸 Badminton Queue System</h1>
-    </div>
-
-    <div class="app-container">
-      <div class="controls">
-        <button
-          class="btn btn-success"
-          data-toggle="modal"
-          data-target="#addPlayerModal"
-        >
-          + Add Player
-        </button>
-        <button onclick="openPlayerPoolModal()" class="btn btn-info">
-          👥 All Players
-        </button>
-        <button onclick="deletePlayer()" class="btn btn-danger">
-          🗑️ Delete
-        </button>
-        <button onclick="syncWithFirebase()" class="btn btn-secondary">
-          🔄 Sync
-        </button>
-        <button onclick="startNewSession()" class="btn btn-primary">
-          ▶️ New Session
-        </button>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Badminton Queue Management</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-header">
+    <h1>Badminton Queue System</h1>
+  </div>
+  
+  <div class="controls">
+    <button onclick="addPlayer()" class="btn btn-success">Add Player</button>
+    <button onclick="deletePlayer()" class="btn btn-danger">Delete Player</button>
+    <button onclick="syncWithFirebase()" class="btn btn-sync">Sync with Database</button>
+    <button onclick="startNewSession()" class="btn btn-primary">New Session</button>
+  </div>
+  <div class="layout-container">
+    <div class="main-area">
+      <div class="queue-section queue-left">
+        <div class="queue-header">
+          <h3>Advanced Queue</h3>
+          <div class="queue-info">Drag players here</div>
+        </div>
+        <div id="player-queue" class="queue-content"></div>
       </div>
       
-      <!-- Automation Status Display -->
-      <div class="automation-status">
-        <div class="auto-status-indicator">
-          <span class="status-dot active"></span>
-          <span class="status-text">Auto-Assignment: ACTIVE</span>
-          <span class="last-run" id="last-auto-run">Starting...</span>
-        </div>
-        <button onclick="getCourtStatus()" class="btn btn-info btn-sm">
-          📊 Status
-        </button>
-        <button onclick="showAssignmentRules()" class="btn btn-info btn-sm">
-          ℹ️ Rules
-        </button>
-      </div>
-    <div class="layout-container">
-        <div class="queue-section queue-left">
-          <div class="queue-header">
-            <h3>Advanced Queue</h3>
-            <div class="queue-info">Drag players here</div>
+      <div class="court-area">
+        <div class="entrance-label">Entrance</div>
+        <div class="courts-grid">
+          <!-- Outside Courts (G1-G2) -->
+          <div class="court" id="G1-court">
+            <div class="court-header">
+              <div class="court-title">
+                <span class="court-name">G1 (Game)</span>
+                <button class="rotate-btn" onclick="rotateCourtPlayers('G1')" title="Finish game - rotate players">🔄</button>
+              </div>
+              <select class="court-type-dropdown" onchange="changeCourtType('G1', this.value)">
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+                <option value="training">Training</option>
+              </select>
+            </div>
+            <div class="court-players"></div>
           </div>
-          <div id="player-queue" class="queue-content"></div>
-        </div>
-
-        <div class="court-area">
-          <div class="entrance-label">Entrance</div>
-          <div class="courts-grid">
-            <!-- Outside Courts (G1-G2) -->
-            <div class="court" id="G1-court">
-              <div class="court-header">
-                <div class="court-title">
-                  <span class="court-name">G1 (Game)</span>
-                  <button
-                    class="rotate-btn"
-                    onclick="rotateCourtPlayers('G1')"
-                    title="Finish game - rotate players"
-                  >
-                    🔄
-                  </button>
-                </div>
-                <select
-                  class="court-type-dropdown"
-                  onchange="changeCourtType('G1', this.value)"
-                >
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                  <option value="training">Training</option>
-                </select>
+          <div class="court" id="W1-court">
+            <div class="court-header">
+              <div class="court-title">
+                <span class="court-name">W1 (Warm up)</span>
               </div>
-              <div class="court-players"></div>
+              <select class="court-type-dropdown" onchange="changeCourtType('W1', this.value)">
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+                <option value="training">Training</option>
+              </select>
             </div>
-            <div class="court" id="W1-court">
-              <div class="court-header">
-                <div class="court-title">
-                  <span class="court-name">W1 (Warm up)</span>
-                </div>
-                <select
-                  class="court-type-dropdown"
-                  onchange="changeCourtType('W1', this.value)"
-                >
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                  <option value="training">Training</option>
-                </select>
-              </div>
-              <div class="court-players"></div>
-            </div>
-            <div class="court" id="W2-court">
-              <div class="court-header">
-                <div class="court-title">
-                  <span class="court-name">W2 (Warm up)</span>
-                </div>
-                <select
-                  class="court-type-dropdown"
-                  onchange="changeCourtType('W2', this.value)"
-                >
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                  <option value="training">Training</option>
-                </select>
-              </div>
-              <div class="court-players"></div>
-            </div>
-            <div class="court" id="G2-court">
-              <div class="court-header">
-                <div class="court-title">
-                  <span class="court-name">G2 (Game)</span>
-                  <button
-                    class="rotate-btn"
-                    onclick="rotateCourtPlayers('G2')"
-                    title="Finish game - rotate players"
-                  >
-                    🔄
-                  </button>
-                </div>
-                <select
-                  class="court-type-dropdown"
-                  onchange="changeCourtType('G2', this.value)"
-                >
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                  <option value="training">Training</option>
-                </select>
-              </div>
-              <div class="court-players"></div>
-            </div>
-
-            <!-- Inside Courts (W1-W4) -->
-            <div class="court" id="G3-court">
-              <div class="court-header">
-                <div class="court-title">
-                  <span class="court-name">G3 (Game)</span>
-                  <button
-                    class="rotate-btn"
-                    onclick="rotateCourtPlayers('G3')"
-                    title="Finish game - rotate players"
-                  >
-                    🔄
-                  </button>
-                </div>
-                <select
-                  class="court-type-dropdown"
-                  onchange="changeCourtType('G3', this.value)"
-                >
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                  <option value="training">Training</option>
-                </select>
-              </div>
-              <div class="court-players"></div>
-            </div>
-            <div class="court" id="W3-court">
-              <div class="court-header">
-                <div class="court-title">
-                  <span class="court-name">W3 (Warm up)</span>
-                </div>
-                <select
-                  class="court-type-dropdown"
-                  onchange="changeCourtType('W3', this.value)"
-                >
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                  <option value="training">Training</option>
-                </select>
-              </div>
-              <div class="court-players"></div>
-            </div>
-            <div class="court" id="W4-court">
-              <div class="court-header">
-                <div class="court-title">
-                  <span class="court-name">W4 (Warm up)</span>
-                </div>
-                <select
-                  class="court-type-dropdown"
-                  onchange="changeCourtType('W4', this.value)"
-                >
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                  <option value="training">Training</option>
-                </select>
-              </div>
-              <div class="court-players"></div>
-            </div>
-            <div class="court" id="G4-court">
-              <div class="court-header">
-                <div class="court-title">
-                  <span class="court-name">G4 (Game)</span>
-                  <button
-                    class="rotate-btn"
-                    onclick="rotateCourtPlayers('G4')"
-                    title="Finish game - rotate players"
-                  >
-                    🔄
-                  </button>
-                </div>
-                <select
-                  class="court-type-dropdown"
-                  onchange="changeCourtType('G4', this.value)"
-                >
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                  <option value="training">Training</option>
-                </select>
-              </div>
-              <div class="court-players"></div>
-            </div>
+            <div class="court-players"></div>
           </div>
-        </div>
-
-        <div class="queue-section queue-right">
-          <div class="queue-header">
-            <h3>Intermediate Queue</h3>
-            <div class="queue-info">Drag players here</div>
-          </div>
-          <div id="player-queue-right" class="queue-content"></div>
-        </div>
-    </div>
-
-    <div
-      class="modal fade"
-      id="addPlayerModal"
-      tabindex="-1"
-      role="dialog"
-      aria-labelledby="addPlayerModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="addPlayerModalLabel">Add New Player</h5>
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <form id="addPlayerForm">
-              <div class="form-group">
-                <label for="playerName">Name</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="playerName"
-                  required
-                />
+          <div class="court" id="W2-court">
+            <div class="court-header">
+              <div class="court-title">
+                <span class="court-name">W2 (Warm up)</span>
               </div>
-              <div class="form-group">
-                <label>Qualification</label>
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    name="qualification"
-                    id="advancedQualification"
-                    value="advanced"
-                    checked
-                  />
-                  <label class="form-check-label" for="advancedQualification">
-                    Advanced
-                  </label>
-                </div>
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    name="qualification"
-                    id="intermediateQualification"
-                    value="intermediate"
-                  />
-                  <label
-                    class="form-check-label"
-                    for="intermediateQualification"
-                  >
-                    Intermediate
-                  </label>
-                </div>
-              </div>
-            </form>
+              <select class="court-type-dropdown" onchange="changeCourtType('W2', this.value)">
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+                <option value="training">Training</option>
+              </select>
+            </div>
+            <div class="court-players"></div>
           </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-dismiss="modal"
-            >
-              Close
-            </button>
-            <button type="button" class="btn btn-primary" id="savePlayerBtn">
-              Save Player
-            </button>
+          <div class="court" id="G2-court">
+            <div class="court-header">
+              <div class="court-title">
+                <span class="court-name">G2 (Game)</span>
+                <button class="rotate-btn" onclick="rotateCourtPlayers('G2')" title="Finish game - rotate players">🔄</button>
+              </div>
+              <select class="court-type-dropdown" onchange="changeCourtType('G2', this.value)">
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+                <option value="training">Training</option>
+              </select>
+            </div>
+            <div class="court-players"></div>
+          </div>
+          
+          <!-- Inside Courts (W1-W4) -->
+          <div class="court" id="G3-court">
+            <div class="court-header">
+              <div class="court-title">
+                <span class="court-name">G3 (Game)</span>
+                <button class="rotate-btn" onclick="rotateCourtPlayers('G3')" title="Finish game - rotate players">🔄</button>
+              </div>
+              <select class="court-type-dropdown" onchange="changeCourtType('G3', this.value)">
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+                <option value="training">Training</option>
+              </select>
+            </div>
+            <div class="court-players"></div>
+          </div>
+          <div class="court" id="W3-court">
+            <div class="court-header">
+              <div class="court-title">
+                <span class="court-name">W3 (Warm up)</span>
+              </div>
+              <select class="court-type-dropdown" onchange="changeCourtType('W3', this.value)">
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+                <option value="training">Training</option>
+              </select>
+            </div>
+            <div class="court-players"></div>
+          </div>
+          <div class="court" id="W4-court">
+            <div class="court-header">
+              <div class="court-title">
+                <span class="court-name">W4 (Warm up)</span>
+              </div>
+              <select class="court-type-dropdown" onchange="changeCourtType('W4', this.value)">
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+                <option value="training">Training</option>
+              </select>
+            </div>
+            <div class="court-players"></div>
+          </div>
+          <div class="court" id="G4-court">
+            <div class="court-header">
+              <div class="court-title">
+                <span class="court-name">G4 (Game)</span>
+                <button class="rotate-btn" onclick="rotateCourtPlayers('G4')" title="Finish game - rotate players">🔄</button>
+              </div>
+              <select class="court-type-dropdown" onchange="changeCourtType('G4', this.value)">
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+                <option value="training">Training</option>
+              </select>
+            </div>
+            <div class="court-players"></div>
           </div>
         </div>
       </div>
+      
+      <div class="queue-section queue-right">
+        <div class="queue-header">
+          <h3>Intermediate Queue</h3>
+          <div class="queue-info">Drag players here</div>
+        </div>
+        <div id="player-queue-right" class="queue-content"></div>
+      </div>
     </div>
+  </div>
 
-    <!-- Edit Player Modal -->
-    <div
-      class="modal fade"
-      id="editPlayerModal"
-      tabindex="-1"
-      role="dialog"
-      aria-labelledby="editPlayerModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="editPlayerModalLabel">Edit Player</h5>
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
+  <!-- Firebase CDN -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      getDocs, 
+      updateDoc, 
+      deleteDoc, 
+      doc, 
+      onSnapshot,
+      query,
+      where,
+      setDoc,
+      getDoc
+    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    
+    // Make Firebase modules available globally
+    window.FirebaseApp = { initializeApp };
+    window.FirebaseFirestore = { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      getDocs, 
+      updateDoc, 
+      deleteDoc, 
+      doc, 
+      onSnapshot,
+      query,
+      where,
+      setDoc,
+      getDoc
+    };
+    
+    console.log('Firebase modules loaded');
+  </script>
+  
+  <!-- Main application script -->
+  <script src="/static/scripts.js"></script>
+
+  <!-- Player Pool Modal -->
+  <div id="player-pool-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Player Pool</h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="player-pool-controls">
+          <input type="text" id="player-pool-search" placeholder="Search players...">
+          <div class="filter-options">
+            <label><input type="checkbox" id="show-active" checked> Show Active</label>
+            <label><input type="checkbox" id="show-inactive" checked> Show Inactive</label>
           </div>
-          <div class="modal-body">
-            <form id="editPlayerForm">
-              <input type="hidden" id="editPlayerId" />
-              <div class="form-group">
-                <label for="editPlayerName">Name</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="editPlayerName"
-                  required
-                />
-              </div>
-              <div class="form-group">
-                <label for="editPlayerEmail">Email</label>
-                <input
-                  type="email"
-                  class="form-control"
-                  id="editPlayerEmail"
-                  required
-                />
-              </div>
-              <div class="form-group">
-                <label>Qualification</label>
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    name="editQualification"
-                    id="editAdvancedQualification"
-                    value="advanced"
-                  />
-                  <label
-                    class="form-check-label"
-                    for="editAdvancedQualification"
-                  >
-                    Advanced
-                  </label>
-                </div>
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    name="editQualification"
-                    id="editIntermediateQualification"
-                    value="intermediate"
-                  />
-                  <label
-                    class="form-check-label"
-                    for="editIntermediateQualification"
-                  >
-                    Intermediate
-                  </label>
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-dismiss="modal"
-            >
-              Close
-            </button>
-            <button type="button" class="btn btn-primary" id="updatePlayerBtn">
-              Update Player
-            </button>
-          </div>
+        </div>
+        <div id="player-pool-list" class="player-pool-list">
+          <!-- Players will be populated here -->
         </div>
       </div>
-    </div>
-    <!-- Player Pool Modal -->
-    <div id="player-pool-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Player Pool</h2>
-          <span class="close-modal">&times;</span>
-        </div>
-        <div class="modal-body">
-          <div class="player-pool-controls">
-            <input
-              type="text"
-              id="player-pool-search"
-              placeholder="Search players..."
-            />
-            <div class="filter-options">
-              <label
-                ><input type="checkbox" id="show-active" checked /> Show
-                Active</label
-              >
-              <label
-                ><input type="checkbox" id="show-inactive" checked /> Show
-                Inactive</label
-              >
-            </div>
-          </div>
-          <div id="player-pool-list" class="player-pool-list">
-            <!-- Players will be populated here -->
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button id="close-pool-modal" class="btn">Close</button>
-        </div>
+      <div class="modal-footer">
+        <button id="close-pool-modal" class="btn">Close</button>
       </div>
     </div>
-  </body>
+  </div>
+</body>
 </html>
-<!-- Main application script -->
-<script src="/static/scripts.js"></script>
-<link
-  rel="stylesheet"
-  href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-/>
-<!-- jQuery (required by Bootstrap 4) -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
