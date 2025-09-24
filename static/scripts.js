@@ -1,499 +1,687 @@
-// // Badminton Queue Management System
-// class BadmintonQueueApp {
-//     constructor() {
-//         this.players = [];
-//         this.courts = [];
-//         this.init();
-//     }
-
-//     async init() {
-//         await this.loadPlayers();
-//         await this.loadCourts();
-//         this.renderQueues();
-//         this.renderCourts();
-//         this.setupEventListeners();
-//     }
-
-//     // Fetch all players from the database
-//     async loadPlayers() {
-//         try {
-//             const response = await fetch('/api/players/');
-//             if (response.ok) {
-//                 this.players = await response.json();
-//                 console.log('Players loaded:', this.players);
-//                 console.log('Queued players:', this.getQueuedPlayers());
-//             } else {
-//                 console.error('Failed to load players:', response.statusText);
-//             }
-//         } catch (error) {
-//             console.error('Error loading players:', error);
-//         }
-//     }
-
-//     // Fetch all courts from the database
-//     async loadCourts() {
-//         try {
-//             const response = await fetch('/api/courts/');
-//             if (response.ok) {
-//                 this.courts = await response.json();
-//                 console.log('Courts loaded:', this.courts);
-//             } else {
-//                 console.error('Failed to load courts:', response.statusText);
-//             }
-//         } catch (error) {
-//             console.error('Error loading courts:', error);
-//         }
-//     }
-
-//     // Get players in queue (not assigned to any court)
-//     getQueuedPlayers() {
-//         console.log('All players in getQueuedPlayers:', this.players);
-//         const queuedPlayers = this.players.filter(player => {
-//             console.log(`Player ${player.name}: court_id=${player.court_id}`);
-//             return !player.court_id;
-//         });
-//         console.log('Filtered queued players:', queuedPlayers);
-//         return queuedPlayers;
-//     }
-
-//     // Get advanced queue players
-//     getAdvancedQueue() {
-//         return this.getQueuedPlayers().filter(player => 
-//             player.qualification === 'advanced'
-//         );
-//     }
-
-//     // Get intermediate queue players
-//     getIntermediateQueue() {
-//         return this.getQueuedPlayers().filter(player => 
-//             player.qualification === 'intermediate'
-//         );
-//     }
-
-//     // Render players in their respective queues
-//     renderQueues() {
-//         this.renderAdvancedQueue();
-//         this.renderIntermediateQueue();
-//     }
-
-//     renderAdvancedQueue() {
-//         const queueContainer = document.getElementById('player-queue');
-//         // Get advanced players with no court assignment (court_id is null)
-//         const advancedPlayers = this.players.filter(player => 
-//             player.qualification === 'advanced' && player.court_id === null
-//         );
-        
-//         console.log('Rendering advanced queue:', advancedPlayers);
-//         queueContainer.innerHTML = '';
-        
-//         advancedPlayers.forEach((player, index) => {
-//             const playerElement = this.createPlayerElement(player, index + 1);
-//             queueContainer.appendChild(playerElement);
-//         });
-//     }
-
-//     renderIntermediateQueue() {
-//         const queueContainer = document.getElementById('player-queue-right');
-//         // Get intermediate players with no court assignment (court_id is null)
-//         const intermediatePlayers = this.players.filter(player => 
-//             player.qualification === 'intermediate' && player.court_id === null
-//         );
-        
-//         console.log('Rendering intermediate queue:', intermediatePlayers);
-//         queueContainer.innerHTML = '';
-        
-//         intermediatePlayers.forEach((player, index) => {
-//             const playerElement = this.createPlayerElement(player, index + 1);
-//             queueContainer.appendChild(playerElement);
-//         });
-//     }
-
-//     // Create a player element for the queue
-//     createPlayerElement(player, position) {
-//         const playerDiv = document.createElement('div');
-//         playerDiv.className = `queue-item player-box ${player.qualification}-player`;
-//         playerDiv.draggable = true;
-//         playerDiv.dataset.playerId = player.id;
-//         playerDiv.dataset.qualification = player.qualification;
-        
-//         playerDiv.innerHTML = `
-//             <div class="queue-number">${position}</div>
-//             <div class="player-name">${player.name}</div>
-//         `;
-
-//         // Add drag event listeners
-//         this.addDragEventListeners(playerDiv);
-        
-//         return playerDiv;
-//     }
-
-//     // Add drag and drop functionality
-//     addDragEventListeners(element) {
-//         element.addEventListener('dragstart', (e) => {
-//             e.dataTransfer.setData('text/plain', element.dataset.playerId);
-//             e.dataTransfer.setData('application/qualification', element.dataset.qualification);
-//             element.classList.add('dragging');
-//         });
-
-//         element.addEventListener('dragend', (e) => {
-//             element.classList.remove('dragging');
-//         });
-//     }
-
-//     // Render courts with assigned players
-//     renderCourts() {
-//         this.courts.forEach(court => {
-//             this.renderCourt(court);
-//         });
-//     }
-
-//     async renderCourt(court) {
-//         const courtElement = document.getElementById(`${court.name}-court`);
-//         if (!courtElement) return;
-
-//         try {
-//             // Get players assigned to this court
-//             const response = await fetch(`/api/courts/${court.id}/players`);
-//             if (response.ok) {
-//                 const courtPlayers = await response.json();
-//                 const playersContainer = courtElement.querySelector('.court-players');
-                
-//                 playersContainer.innerHTML = '';
-                
-//                 courtPlayers.forEach(player => {
-//                     const playerElement = this.createCourtPlayerElement(player);
-//                     playersContainer.appendChild(playerElement);
-//                 });
-
-//                 // Update court type styling
-//                 this.updateCourtStyling(courtElement, court.court_type);
-//             }
-//         } catch (error) {
-//             console.error(`Error loading players for court ${court.name}:`, error);
-//         }
-//     }
-
-//     createCourtPlayerElement(player) {
-//         const playerDiv = document.createElement('div');
-//         playerDiv.className = `player-box ${player.qualification}-player`;
-//         playerDiv.dataset.playerId = player.id;
-//         playerDiv.dataset.qualification = player.qualification;
-//         playerDiv.draggable = true;
-//         playerDiv.textContent = player.name;
-        
-//         // Add drag event listeners for court players
-//         this.addDragEventListeners(playerDiv);
-        
-//         return playerDiv;
-//     }
-
-//     updateCourtStyling(courtElement, courtType) {
-//         // Remove existing court type classes
-//         courtElement.classList.remove('court-advanced', 'court-intermediate', 'court-training');
-        
-//         // Add the appropriate class
-//         courtElement.classList.add(`court-${courtType}`);
-        
-//         // Update the dropdown selection
-//         const dropdown = courtElement.querySelector('.court-type-dropdown');
-//         if (dropdown) {
-//             dropdown.value = courtType;
-//         }
-//     }
-
-//     // Setup event listeners for the application
-//     setupEventListeners() {
-//         this.setupCourtDropZones();
-//         this.setupQueueDropZones();
-//     }
-
-//     setupCourtDropZones() {
-//         const courts = document.querySelectorAll('.court');
-        
-//         courts.forEach(court => {
-//             court.addEventListener('dragover', (e) => {
-//                 e.preventDefault();
-//                 court.classList.add('drag-over-court');
-//             });
-
-//             court.addEventListener('dragleave', (e) => {
-//                 court.classList.remove('drag-over-court');
-//             });
-
-//             court.addEventListener('drop', async (e) => {
-//                 e.preventDefault();
-//                 court.classList.remove('drag-over-court');
-                
-//                 const playerId = e.dataTransfer.getData('text/plain');
-//                 const courtId = this.getCourtIdFromElement(court);
-                
-//                 if (playerId && courtId) {
-//                     await this.assignPlayerToCourt(playerId, courtId);
-//                 }
-//             });
-//         });
-//     }
-
-//     setupQueueDropZones() {
-//         const advancedQueue = document.getElementById('player-queue');
-//         const intermediateQueue = document.getElementById('player-queue-right');
-
-//         [advancedQueue, intermediateQueue].forEach(queue => {
-//             queue.addEventListener('dragover', (e) => {
-//                 e.preventDefault();
-//                 const queueType = queue.id === 'player-queue' ? 'advanced' : 'intermediate';
-//                 queue.classList.add(`drag-over-${queueType}`);
-//             });
-
-//             queue.addEventListener('dragleave', (e) => {
-//                 queue.classList.remove('drag-over-advanced', 'drag-over-intermediate');
-//             });
-
-//             queue.addEventListener('drop', async (e) => {
-//                 e.preventDefault();
-//                 queue.classList.remove('drag-over-advanced', 'drag-over-intermediate');
-                
-//                 const playerId = e.dataTransfer.getData('text/plain');
-//                 const currentQualification = e.dataTransfer.getData('application/qualification');
-//                 const queueType = queue.id === 'player-queue' ? 'advanced' : 'intermediate';
-                
-//                 if (playerId) {
-//                     await this.movePlayerToQueue(playerId, queueType, currentQualification);
-//                 }
-//             });
-//         });
-//     }
-
-//     getCourtIdFromElement(courtElement) {
-//         const courtName = courtElement.id.replace('-court', '');
-//         const court = this.courts.find(c => c.name === courtName);
-//         return court ? court.id : null;
-//     }
-
-//     // API calls for player management
-//     async assignPlayerToCourt(playerId, courtId) {
-//         try {
-//             console.log(`Assigning player ${playerId} to court ${courtId}...`);
-//             const response = await fetch(`/api/courts/${courtId}/assign/${playerId}`, {
-//                 method: 'POST'
-//             });
-            
-//             if (response.ok) {
-//                 const result = await response.json();
-//                 console.log(result.message);
-                
-//                 // Refresh the display - player should disappear from queue and appear on court
-//                 await this.loadPlayers();
-//                 this.renderQueues(); // This will remove the player from queue display
-//                 await this.renderCourt(this.courts.find(c => c.id === courtId));
-                
-//                 console.log('Player assigned successfully and display refreshed');
-//             } else {
-//                 const error = await response.json();
-//                 alert(`Error: ${error.detail}`);
-//             }
-//         } catch (error) {
-//             console.error('Error assigning player to court:', error);
-//             alert('Failed to assign player to court');
-//         }
-//     }
-
-//     async movePlayerToQueue(playerId, targetQueueType, currentQualification) {
-//         console.log(`Moving player ${playerId} to ${targetQueueType} queue (current: ${currentQualification})`);
-        
-//         try {
-//             // Step 1: Remove from court if assigned (this puts them in queue)
-//             console.log('Step 1: Removing from court...');
-//             await this.removePlayerFromCourt(playerId);
-            
-//             // Step 2: Change qualification if different from target queue
-//             if (currentQualification !== targetQueueType) {
-//                 console.log(`Step 2: Changing qualification from ${currentQualification} to ${targetQueueType}...`);
-//                 await this.updatePlayerQualification(playerId, targetQueueType);
-//             } else {
-//                 console.log('Step 2: No qualification change needed');
-//             }
-            
-//             // Step 3: Refresh the display
-//             console.log('Step 3: Refreshing display...');
-//             await this.loadPlayers();
-//             this.renderQueues();
-//             this.renderCourts();
-            
-//             console.log('Move completed successfully');
-            
-//         } catch (error) {
-//             console.error('Error moving player to queue:', error);
-//             alert('Failed to move player to queue: ' + error.message);
-//         }
-//     }
-
-//     async removePlayerFromCourt(playerId) {
-//         try {
-//             console.log(`Removing player ${playerId} from court...`);
-//             const response = await fetch(`/api/queue/${playerId}`, {
-//                 method: 'DELETE'
-//             });
-            
-//             if (response.ok) {
-//                 const result = await response.json();
-//                 console.log('Player removed from court:', result.message);
-//                 return true;
-//             } else {
-//                 const error = await response.json();
-//                 console.warn('Remove from court response:', error);
-//                 // Don't throw error if player wasn't on a court to begin with
-//                 return true;
-//             }
-//         } catch (error) {
-//             console.error('Error removing player from court:', error);
-//             throw error;
-//         }
-//     }
-
-//     async updatePlayerQualification(playerId, newQualification) {
-//         try {
-//             console.log(`Updating player ${playerId} qualification to ${newQualification}...`);
-//             const response = await fetch(`/api/players/${playerId}?qualification=${newQualification}`, {
-//                 method: 'PUT'
-//             });
-            
-//             if (response.ok) {
-//                 const result = await response.json();
-//                 console.log(`Player qualification changed to ${newQualification}:`, result);
-//                 return result;
-//             } else {
-//                 const error = await response.json();
-//                 console.error('Qualification update failed:', error);
-//                 alert(`Error changing qualification: ${error.detail}`);
-//                 throw new Error('Failed to update qualification');
-//             }
-//         } catch (error) {
-//             console.error('Error updating player qualification:', error);
-//             throw error;
-//         }
-//     }
-
-//     // Refresh all data and UI
-//     async refresh() {
-//         await this.loadPlayers();
-//         await this.loadCourts();
-//         this.renderQueues();
-//         this.renderCourts();
-//     }
-// }
-
-// // Global functions for HTML button events
-// async function addPlayer() {
-//     const name = prompt('Enter player name:');
-//     const qualification = prompt('Enter qualification (advanced/intermediate):');
+// Authentication functions
+function checkAuth() {
+    const currentPlayer = localStorage.getItem('currentPlayer');
+    if (!currentPlayer) {
+        // Redirect to login if not authenticated
+        window.location.href = '/login';
+        return false;
+    }
     
-//     if (name && (qualification === 'advanced' || qualification === 'intermediate')) {
-//         try {
-//             const response = await fetch('/api/players/', {
-//                 method: 'POST',
-//                 headers: {
-//                     'Content-Type': 'application/json'
-//                 },
-//                 body: JSON.stringify({
-//                     name: name,
-//                     qualification: qualification
-//                 })
-//             });
-            
-//             if (response.ok) {
-//                 const player = await response.json();
-//                 console.log('Player created:', player);
-//                 await app.refresh();
-//             } else {
-//                 const error = await response.json();
-//                 alert(`Error: ${error.detail}`);
-//             }
-//         } catch (error) {
-//             console.error('Error creating player:', error);
-//             alert('Failed to create player');
-//         }
-//     } else {
-//         alert('Please enter valid name and qualification (advanced/intermediate)');
-//     }
-// }
-
-// async function deletePlayer() {
-//     const playerId = prompt('Enter player ID to delete:');
+    // Update welcome message
+    const player = JSON.parse(currentPlayer);
+    const welcomeMessage = document.getElementById('welcome-message');
+    if (welcomeMessage) {
+        welcomeMessage.textContent = `Welcome, ${player.name}!`;
+    }
     
-//     if (playerId) {
-//         try {
-//             const response = await fetch(`/api/players/${playerId}`, {
-//                 method: 'DELETE'
-//             });
+    return true;
+}
+
+async function logout() {
+    const currentPlayer = localStorage.getItem('currentPlayer');
+    if (currentPlayer) {
+        const player = JSON.parse(currentPlayer);
+        try {
+            await fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(player.email),
+            });
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+    }
+    
+    localStorage.removeItem('currentPlayer');
+    window.location.href = '/login';
+}
+
+// Check authentication on page load
+window.addEventListener('load', () => {
+    checkAuth();
+});
+
+// Badminton Queue Management System
+class BadmintonQueueApp {
+    constructor() {
+        this.init();
+    }
+
+    async init() {
+        // Check authentication first
+        if (!checkAuth()) {
+            return;
+        }
+        
+        await this.refreshAll();
+        this.setupEventListeners();
+    }
+
+    // Single API call to get all data
+    async refreshAll() {
+        try {
+            const response = await fetch('/api/queue/refresh-all', {
+                method: 'POST'
+            });
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data)
+                this.renderQueues(data.queues);
+                this.renderCourts(data.courts);
+                
+                // Show auto-assignment notifications if any were made
+                if (data.auto_assignments && data.auto_assignments.length > 0) {
+                    this.showAutoAssignmentNotification(data.auto_assignments);
+                }
+            } else {
+                console.error('Failed to refresh data:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error refreshing data:', error);
+        }
+    }
+
+    // Show notification for auto-assignments
+    showAutoAssignmentNotification(assignments) {
+        const messages = assignments.map(assignment => 
+            `${assignment.player.name} (${assignment.player.qualification}) → ${assignment.court.name} (${assignment.court.type})`
+        );
+        
+        const notification = document.createElement('div');
+        notification.className = 'auto-assignment-notification';
+        notification.innerHTML = `
+            <div class="notification-header">Auto-assigned players to courts:</div>
+            <div class="notification-body">
+                ${messages.map(msg => `<div class="assignment-item">• ${msg}</div>`).join('')}
+            </div>
+            <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+        `;
+        
+        // Add to page
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
+    // General notification method
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-message">${message}</div>
+            <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+        `;
+        
+        // Add to page
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 4 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 4000);
+    }
+
+    // Simplified queue rendering
+    renderQueues(queuesData) {
+        this.renderQueue('player-queue', queuesData.advanced, 'advanced');
+        this.renderQueue('player-queue-right', queuesData.intermediate, 'intermediate');
+    }
+
+    renderQueue(containerId, players, queueType) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        
+        players.forEach((player, index) => {
+            const playerElement = this.createPlayerElement(player, index + 1, queueType);
+            container.appendChild(playerElement);
+        });
+    }
+
+    createPlayerElement(player, position, queueType) {
+        const playerDiv = document.createElement('div');
+        playerDiv.className = `queue-item player-box ${queueType}-player`;
+        playerDiv.draggable = true;
+        playerDiv.dataset.playerId = player.id;
+        playerDiv.dataset.qualification = player.qualification;
+        
+        playerDiv.innerHTML = `
+            <div class="queue-number">${position}</div>
+            <div class="player-name">${player.name}</div>
+        `;
+
+        this.addDragEventListeners(playerDiv);
+        return playerDiv;
+    }
+
+    // Simplified court rendering
+    renderCourts(courtsData) {
+        courtsData.forEach(courtData => {
+            this.renderCourt(courtData);
+        });
+    }
+
+    renderCourt(courtData) {
+        const courtElement = document.getElementById(`${courtData.court.name}-court`);
+        if (!courtElement) return;
+
+        const playersContainer = courtElement.querySelector('.court-players');
+        playersContainer.innerHTML = '';
+        
+        courtData.players.forEach(player => {
+            const playerElement = this.createCourtPlayerElement(player);
+            playersContainer.appendChild(playerElement);
+        });
+
+        // Update court styling
+        this.updateCourtStyling(courtElement, courtData.court.type);
+    }
+
+    createCourtPlayerElement(player) {
+        const playerDiv = document.createElement('div');
+        playerDiv.className = `player-box ${player.qualification}-player`;
+        playerDiv.dataset.playerId = player.id;
+        playerDiv.dataset.qualification = player.qualification;
+        playerDiv.draggable = true;
+        playerDiv.textContent = player.name;
+        
+        this.addDragEventListeners(playerDiv);
+        return playerDiv;
+    }
+
+    updateCourtStyling(courtElement, courtType) {
+        courtElement.classList.remove('court-advanced', 'court-intermediate', 'court-training');
+        courtElement.classList.add(`court-${courtType}`);
+        
+        const dropdown = courtElement.querySelector('.court-type-dropdown');
+        if (dropdown) {
+            dropdown.value = courtType;
+        }
+    }
+
+    // Drag and drop setup
+    addDragEventListeners(element) {
+        element.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', element.dataset.playerId);
+            e.dataTransfer.setData('application/qualification', element.dataset.qualification);
+            element.classList.add('dragging');
             
-//             if (response.ok) {
-//                 const result = await response.json();
-//                 console.log(result.message);
-//                 await app.refresh();
-//             } else {
-//                 const error = await response.json();
-//                 alert(`Error: ${error.detail}`);
-//             }
-//         } catch (error) {
-//             console.error('Error deleting player:', error);
-//             alert('Failed to delete player');
-//         }
-//     }
-// }
+            // Store the dragging player qualification for use in dragover events
+            this.currentDragQualification = element.dataset.qualification;
+        });
 
-// async function syncWithFirebase() {
-//     // For now, just refresh from database
-//     console.log('Syncing with database...');
-//     await app.refresh();
-// }
+        element.addEventListener('dragend', (e) => {
+            element.classList.remove('dragging');
+            this.currentDragQualification = null;
+        });
+    }
 
-// async function startNewSession() {
-//     if (confirm('Start new session? This will move all players back to queue.')) {
-//         // Implementation for new session logic
-//         console.log('Starting new session...');
-//         await app.refresh();
-//     }
-// }
+    setupEventListeners() {
+        this.setupCourtDropZones();
+        this.setupQueueDropZones();
+    }
 
-// async function rotateCourtPlayers(courtName) {
-//     console.log(`Rotating players on court ${courtName}`);
-//     // Implementation for rotating players on a court
-//     await app.refresh();
-// }
-
-// async function changeCourtType(courtName, newType) {
-//     try {
-//         const court = app.courts.find(c => c.name === courtName);
-//         if (!court) return;
+    setupCourtDropZones() {
+        const courts = document.querySelectorAll('.court');
         
-//         const response = await fetch(`/api/courts/${court.id}`, {
-//             method: 'PUT',
-//             headers: {
-//                 'Content-Type': 'application/json'
-//             },
-//             body: JSON.stringify({
-//                 name: court.name,
-//                 court_type: newType
-//             })
-//         });
-        
-//         if (response.ok) {
-//             console.log(`Court ${courtName} type changed to ${newType}`);
-//             await app.loadCourts();
-//             await app.renderCourt(court);
-//         } else {
-//             const error = await response.json();
-//             alert(`Error: ${error.detail}`);
-//         }
-//     } catch (error) {
-//         console.error('Error changing court type:', error);
-//         alert('Failed to change court type');
-//     }
-// }
+        courts.forEach(court => {
+            court.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                
+                // Check if this is a valid drop target
+                const courtType = this.getCourtTypeFromElement(court);
+                
+                if (courtType === 'advanced' && this.currentDragQualification === 'intermediate') {
+                    court.classList.add('drag-over-invalid');
+                    court.classList.remove('drag-over-court');
+                } else {
+                    court.classList.add('drag-over-court');
+                    court.classList.remove('drag-over-invalid');
+                }
+            });
 
-// // Initialize the application when the page loads
-// let app;
-// document.addEventListener('DOMContentLoaded', () => {
-//     app = new BadmintonQueueApp();
-// });
+            court.addEventListener('dragleave', (e) => {
+                court.classList.remove('drag-over-court', 'drag-over-invalid');
+            });
+
+            court.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                court.classList.remove('drag-over-court', 'drag-over-invalid');
+                
+                const playerId = e.dataTransfer.getData('text/plain');
+                const playerQualification = e.dataTransfer.getData('application/qualification');
+                const courtId = this.getCourtIdFromElement(court);
+                
+                // Check if court is advanced and player is not advanced
+                const courtType = this.getCourtTypeFromElement(court);
+                if (courtType === 'advanced' && playerQualification !== 'advanced') {
+                    alert('Only advanced players can be assigned to advanced courts!');
+                    return;
+                }
+                
+                if (playerId && courtId) {
+                    await this.movePlayerToCourt(playerId, courtId);
+                }
+            });
+        });
+    }
+
+    setupQueueDropZones() {
+        const advancedQueue = document.getElementById('player-queue');
+        const intermediateQueue = document.getElementById('player-queue-right');
+
+        [advancedQueue, intermediateQueue].forEach(queue => {
+            queue.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const queueType = queue.id === 'player-queue' ? 'advanced' : 'intermediate';
+                queue.classList.add(`drag-over-${queueType}`);
+            });
+
+            queue.addEventListener('dragleave', (e) => {
+                queue.classList.remove('drag-over-advanced', 'drag-over-intermediate');
+            });
+
+            queue.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                queue.classList.remove('drag-over-advanced', 'drag-over-intermediate');
+                
+                const playerId = e.dataTransfer.getData('text/plain');
+                const currentQualification = e.dataTransfer.getData('application/qualification');
+                const targetQualification = queue.id === 'player-queue' ? 'advanced' : 'intermediate';
+                
+                if (playerId) {
+                    await this.movePlayerToQueue(playerId, targetQualification, currentQualification);
+                }
+            });
+        });
+    }
+
+    getCourtIdFromElement(courtElement) {
+        const courtName = courtElement.id.replace('-court', '');
+        // Simple mapping - you may want to fetch this from API if needed
+        const courtMappings = {
+            'G1': 1, 'G2': 2, 'G3': 3, 'G4': 4,
+            'W1': 5, 'W2': 6, 'W3': 7, 'W4': 8
+        };
+        return courtMappings[courtName] || null;
+    }
+
+    getCourtTypeFromElement(courtElement) {
+        // Check the court's CSS classes to determine type
+        if (courtElement.classList.contains('court-advanced')) {
+            return 'advanced';
+        } else if (courtElement.classList.contains('court-intermediate')) {
+            return 'intermediate';
+        } else if (courtElement.classList.contains('court-training')) {
+            return 'training';
+        }
+        
+        // Fallback: check dropdown value if available
+        const dropdown = courtElement.querySelector('.court-type-dropdown');
+        if (dropdown) {
+            return dropdown.value;
+        }
+        
+        return 'training'; // default
+    }
+
+    // Simplified API calls
+    async movePlayerToCourt(playerId, courtId) {
+        try {
+            const response = await fetch(`/api/queue/move-to-court/${playerId}/${courtId}`, {
+                method: 'POST'
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                console.log(result.message);
+                await this.refreshAll(); // Single refresh call
+            } else {
+                const error = await response.json();
+                alert(`Error: ${error.detail}`);
+            }
+        } catch (error) {
+            console.error('Error moving player to court:', error);
+            alert('Failed to move player to court');
+        }
+    }
+
+    async movePlayerToQueue(playerId, targetQualification, currentQualification) {
+        try {
+            const url = targetQualification !== currentQualification 
+                ? `/api/queue/move-to-queue/${playerId}?qualification=${targetQualification}`
+                : `/api/queue/move-to-queue/${playerId}`;
+                
+            const response = await fetch(url, {
+                method: 'POST'
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                console.log(result.message);
+                await this.refreshAll(); // Single refresh call
+            } else {
+                const error = await response.json();
+                alert(`Error: ${error.detail}`);
+            }
+        } catch (error) {
+            console.error('Error moving player to queue:', error);
+            alert('Failed to move player to queue');
+        }
+    }
+}
+
+// Simplified global functions
+async function addAdvancedPlayer() {
+    const name = prompt('Enter advanced player name:');
+    
+    if (name) {
+        try {
+            const response = await fetch('/api/players/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, qualification: 'advanced' })
+            });
+            
+            if (response.ok) {
+                await app.refreshAll();
+            } else {
+                const error = await response.json();
+                alert(`Error: ${error.detail}`);
+            }
+        } catch (error) {
+            alert('Failed to create advanced player');
+        }
+    }
+}
+
+async function addIntermediatePlayer() {
+    const name = prompt('Enter intermediate player name:');
+    
+    if (name) {
+        try {
+            const response = await fetch('/api/players/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, qualification: 'intermediate' })
+            });
+            
+            if (response.ok) {
+                await app.refreshAll();
+            } else {
+                const error = await response.json();
+                alert(`Error: ${error.detail}`);
+            }
+        } catch (error) {
+            alert('Failed to create intermediate player');
+        }
+    }
+}
+
+async function deletePlayer() {
+    const playerId = prompt('Enter player ID to delete:');
+    if (playerId) {
+        try {
+            const response = await fetch(`/api/players/${playerId}`, { method: 'DELETE' });
+            if (response.ok) {
+                await app.refreshAll();
+            } else {
+                const error = await response.json();
+                alert(`Error: ${error.detail}`);
+            }
+        } catch (error) {
+            alert('Failed to delete player');
+        }
+    }
+}
+
+async function autoFillCourts() {
+    try {
+        const response = await fetch('/api/queue/auto-fill-courts', {
+            method: 'POST'
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            console.log(result.message);
+            
+            if (result.assignments && result.assignments.length > 0) {
+                app.showAutoAssignmentNotification(result.assignments);
+            } else {
+                // Show a brief message that no assignments were needed
+                const notification = document.createElement('div');
+                notification.className = 'auto-assignment-notification info';
+                notification.innerHTML = `
+                    <div class="notification-body">No auto-fill needed - courts are full or no players in queue</div>
+                    <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+                `;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 3000);
+            }
+            
+            await app.refreshAll();
+        } else {
+            const error = await response.json();
+            alert(`Error: ${error.detail}`);
+        }
+    } catch (error) {
+        console.error('Error auto-filling courts:', error);
+        alert('Failed to auto-fill courts');
+    }
+}
+
+async function startNewSession() {
+    if (confirm('Start new session? This will deactivate all players and set all courts to training mode.')) {
+        try {
+            const response = await fetch('/api/queue/start-new-session', {
+                method: 'POST'
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                const message = `New session started!\n• ${result.players_deactivated} players deactivated\n• ${result.courts_set_to_training} courts set to training`;
+                app.showNotification(message, 'success');
+                await app.refreshAll();
+            } else {
+                const error = await response.json();
+                alert(`Error: ${error.detail}`);
+            }
+        } catch (error) {
+            console.error('Error starting new session:', error);
+            alert('Failed to start new session');
+        }
+    }
+}
+
+async function changeCourtType(courtID, newType) {
+    try {
+        const response = await fetch(`/api/courts/${courtID}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ court_type: newType })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            
+            // Show notification if players were moved
+            if (result.moved_players && result.moved_players.length > 0) {
+                const playerNames = result.moved_players.map(p => p.name).join(', ');
+                const message = `Court changed to ${newType}. Moved ${result.moved_players.length} players back to queue: ${playerNames}`;
+                app.showNotification(message, 'info');
+            } else if (newType === 'training') {
+                app.showNotification(`Court changed to training court`, 'info');
+            }
+            
+            await app.refreshAll();
+        } else {
+            const error = await response.json();
+            alert(`Error: ${error.detail}`);
+        }
+    } catch (error) {
+        alert(error);
+    }
+}
+
+// Player Modal Functions
+async function openPlayerModal() {
+    const modal = document.getElementById('player-pool-modal');
+    modal.style.display = 'block';
+    await loadAllPlayers();
+}
+
+function closePlayerModal() {
+    const modal = document.getElementById('player-pool-modal');
+    modal.style.display = 'none';
+}
+
+async function loadAllPlayers() {
+    try {
+        const response = await fetch('/api/players/');
+        if (response.ok) {
+            const players = await response.json();
+            displayPlayersInModal(players);
+        } else {
+            console.error('Failed to load players');
+        }
+    } catch (error) {
+        console.error('Error loading players:', error);
+    }
+}
+
+function displayPlayersInModal(players) {
+    const playerList = document.getElementById('player-pool-list');
+    const showActive = document.getElementById('show-active').checked;
+    const showInactive = document.getElementById('show-inactive').checked;
+    const showAdvanced = document.getElementById('show-advanced').checked;
+    const showIntermediate = document.getElementById('show-intermediate').checked;
+    const searchTerm = document.getElementById('player-pool-search').value.toLowerCase();
+
+    // Filter players
+    const filteredPlayers = players.filter(player => {
+        const activeMatch = (player.is_active && showActive) || (!player.is_active && showInactive);
+        const qualificationMatch = (player.qualification === 'advanced' && showAdvanced) || 
+                                 (player.qualification === 'intermediate' && showIntermediate);
+        const searchMatch = player.name.toLowerCase().includes(searchTerm);
+        
+        return activeMatch && qualificationMatch && searchMatch;
+    });
+
+    playerList.innerHTML = '';
+    
+    filteredPlayers.forEach(player => {
+        const playerDiv = document.createElement('div');
+        playerDiv.className = `player-modal-item ${player.is_active ? 'active' : 'inactive'} ${player.qualification}`;
+        
+        playerDiv.innerHTML = `
+            <div class="player-info">
+                <span class="player-name">${player.name}</span>
+                <span class="player-qualification ${player.qualification}">${player.qualification === 'advanced' ? 'A' : 'I'}</span>
+            </div>
+            <div class="player-actions">
+                <button onclick="togglePlayerStatus(${player.id}, ${!player.is_active})" 
+                        class="btn btn-sm ${player.is_active ? 'btn-warning' : 'btn-success'}">
+                    ${player.is_active ? 'Deactivate' : 'Activate'}
+                </button>
+                <button onclick="deletePlayerById(${player.id})" class="btn btn-sm btn-danger">Delete</button>
+            </div>
+        `;
+        
+        playerList.appendChild(playerDiv);
+    });
+}
+
+async function togglePlayerStatus(playerId, newStatus) {
+    try {
+        const response = await fetch(`/api/players/${playerId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_active: newStatus })
+        });
+        
+        if (response.ok) {
+            await loadAllPlayers(); // Refresh the list
+            await app.refreshAll(); // Refresh the main app
+        } else {
+            const error = await response.json();
+            alert(`Error: ${error.detail}`);
+        }
+    } catch (error) {
+        console.error('Error toggling player status:', error);
+        alert('Failed to update player status');
+    }
+}
+
+async function deletePlayerById(playerId) {
+    if (confirm('Are you sure you want to delete this player?')) {
+        try {
+            const response = await fetch(`/api/players/${playerId}`, { method: 'DELETE' });
+            if (response.ok) {
+                await loadAllPlayers(); // Refresh the list
+                await app.refreshAll(); // Refresh the main app
+            } else {
+                const error = await response.json();
+                alert(`Error: ${error.detail}`);
+            }
+        } catch (error) {
+            console.error('Error deleting player:', error);
+            alert('Failed to delete player');
+        }
+    }
+}
+
+// Add event listeners for modal filters
+document.addEventListener('DOMContentLoaded', () => {
+    // Filter event listeners
+    document.getElementById('show-active').addEventListener('change', () => {
+        if (document.getElementById('player-pool-modal').style.display === 'block') {
+            loadAllPlayers();
+        }
+    });
+    
+    document.getElementById('show-inactive').addEventListener('change', () => {
+        if (document.getElementById('player-pool-modal').style.display === 'block') {
+            loadAllPlayers();
+        }
+    });
+    
+    document.getElementById('show-advanced').addEventListener('change', () => {
+        if (document.getElementById('player-pool-modal').style.display === 'block') {
+            loadAllPlayers();
+        }
+    });
+    
+    document.getElementById('show-intermediate').addEventListener('change', () => {
+        if (document.getElementById('player-pool-modal').style.display === 'block') {
+            loadAllPlayers();
+        }
+    });
+    
+    document.getElementById('player-pool-search').addEventListener('input', () => {
+        if (document.getElementById('player-pool-modal').style.display === 'block') {
+            loadAllPlayers();
+        }
+    });
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', (event) => {
+        const modal = document.getElementById('player-pool-modal');
+        if (event.target === modal) {
+            closePlayerModal();
+        }
+    });
+});
+
+// Initialize app
+let app;
+document.addEventListener('DOMContentLoaded', () => {
+    app = new BadmintonQueueApp();
+});

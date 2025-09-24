@@ -132,10 +132,7 @@ def create_demo_data():
         
         db.commit()
         
-        print(f"Created {len(advanced_players)} advanced players")
-        print(f"Created {len(intermediate_players)} intermediate players")
-        print(f"Created {len(advanced_courts)} advanced courts")
-        print(f"Created {len(intermediate_courts)} intermediate courts")
+        pass
     
     finally:
         db.close()

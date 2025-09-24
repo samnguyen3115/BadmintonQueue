@@ -73,12 +73,13 @@ app.add_middleware(
 )
 
 # Import API routers
-from .api import players, courts, queue
+from .api import players, courts, queue, auth
 
-# Include routers
-app.include_router(players.player_router)
-app.include_router(courts.court_router)
-app.include_router(queue.queue_router)
+# Include routers with API prefixes
+app.include_router(auth.auth_router, prefix="/api/auth")
+app.include_router(players.player_router, prefix="/api/players")
+app.include_router(courts.court_router, prefix="/api/courts")
+app.include_router(queue.queue_router, prefix="/api/queue")
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -88,6 +89,12 @@ async def read_root():
     # Serve the main HTML page
     from fastapi.responses import FileResponse
     return FileResponse('templates/index.html')
+
+@app.get("/login")
+async def login_page():
+    # Serve the login page
+    from fastapi.responses import FileResponse
+    return FileResponse('templates/login.html')
 
 @app.get("/api/health")
 def health_check():

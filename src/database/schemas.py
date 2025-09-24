@@ -15,18 +15,33 @@ class CourtType(str, Enum):
 class PlayerBase(BaseModel):
     name: str
     qualification: QualificationType = QualificationType.INTERMEDIATE
+    is_active: bool = True
 
 class PlayerCreate(PlayerBase):
     pass
 
+class PlayerRegister(BaseModel):
+    name: str
+    email: str
+    qualification: QualificationType = QualificationType.INTERMEDIATE
+
+class PlayerLogin(BaseModel):
+    email: str
+
+class PlayerUpdate(BaseModel):
+    name: Optional[str] = None
+    qualification: Optional[QualificationType] = None
+    is_active: Optional[bool] = None
+    court_id: Optional[int] = None
+
 class Player(PlayerBase):
     id: int
+    email: Optional[str] = None
 
     class Config:
         from_attributes = True
 
 class CourtBase(BaseModel):
-    name: str
     court_type: CourtType = CourtType.INTERMEDIATE
 
 class CourtCreate(CourtBase):
@@ -81,3 +96,8 @@ class ApiResponse(BaseModel):
     success: bool
     message: str
     data: Optional[dict] = None
+
+class CourtUpdateResponse(BaseModel):
+    court: 'Court'
+    moved_players: List['Player'] = []
+    message: str

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Badminton Queue - Login</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .login-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-header p {
+            color: #666;
+            font-size: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 1rem;
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .form-toggle {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .form-toggle button {
+            background: none;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 1rem;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            background: #ffeaea;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .success-message {
+            color: #27ae60;
+            background: #eafaf1;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>Welcome</h1>
+                <p id="form-subtitle">Sign in to access the queue system</p>
+            </div>
+            
+            <div id="error-message" class="error-message hidden"></div>
+            <div id="success-message" class="success-message hidden"></div>
+            
+            <!-- Login Form -->
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" name="email" required>
+                </div>
+                
+                <button type="submit" class="btn-primary">Sign In</button>
+            </form>
+            
+            <!-- Register Form -->
+            <form id="register-form" class="hidden">
+                <div class="form-group">
+                    <label for="register-name">Full Name</label>
+                    <input type="text" id="register-name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="register-email">Email Address</label>
+                    <input type="email" id="register-email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="register-qualification">Skill Level</label>
+                    <select id="register-qualification" name="qualification" required>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn-primary">Register</button>
+            </form>
+            
+            <div class="form-toggle">
+                <p id="toggle-text">Don't have an account? 
+                    <button type="button" id="toggle-form">Sign up</button>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const toggleForm = document.getElementById('toggle-form');
+        const toggleText = document.getElementById('toggle-text');
+        const formSubtitle = document.getElementById('form-subtitle');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        
+        let isLoginMode = true;
+        
+        // Toggle between login and register forms
+        function toggleFormMode() {
+            isLoginMode = !isLoginMode;
+            
+            if (isLoginMode) {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                toggleText.innerHTML = 'Don\'t have an account? <button type="button" id="toggle-form">Sign up</button>';
+                formSubtitle.textContent = 'Sign in to access the queue system';
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                toggleText.innerHTML = 'Already have an account? <button type="button" id="toggle-form">Sign in</button>';
+                formSubtitle.textContent = 'Create your account to join the queue';
+            }
+            
+            // Re-add event listener to the new button
+            document.getElementById('toggle-form').addEventListener('click', toggleFormMode);
+            hideMessages();
+        }
+        
+        // Initial event listener
+        toggleForm.addEventListener('click', toggleFormMode);
+        
+        // Hide error/success messages
+        function hideMessages() {
+            errorMessage.classList.add('hidden');
+            successMessage.classList.add('hidden');
+        }
+        
+        // Show error message
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+            successMessage.classList.add('hidden');
+        }
+        
+        // Show success message
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.classList.remove('hidden');
+            errorMessage.classList.add('hidden');
+        }
+        
+        // Handle login form submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessages();
+            
+            const formData = new FormData(loginForm);
+            const email = formData.get('email');
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Login successful! Redirecting...');
+                    // Store player info in localStorage for the main app
+                    localStorage.setItem('currentPlayer', JSON.stringify(data.player));
+                    // Redirect to main app after a short delay
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1500);
+                } else {
+                    showError(data.detail || 'Login failed');
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+            }
+        });
+        
+        // Handle register form submission
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessages();
+            
+            const formData = new FormData(registerForm);
+            const registerData = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                qualification: formData.get('qualification'),
+            };
+            
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(registerData),
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Registration successful! You can now sign in.');
+                    // Switch to login form
+                    setTimeout(() => {
+                        document.getElementById('toggle-form').click();
+                        document.getElementById('login-email').value = registerData.email;
+                    }, 1500);
+                } else {
+                    showError(data.detail || 'Registration failed');
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+            }
+        });
+        
+        // Check if user is already logged in
+        window.addEventListener('load', () => {
+            const currentPlayer = localStorage.getItem('currentPlayer');
+            if (currentPlayer) {
+                // User is already logged in, redirect to main app
+                window.location.href = '/';
+            }
+        });
+    </script>
+</body>
+</html>

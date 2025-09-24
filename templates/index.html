@@ -10,11 +10,18 @@
 <body>
   <div class="app-header">
     <h1>Badminton Queue System</h1>
+    <div class="user-info">
+      <span id="welcome-message">Welcome!</span>
+      <button onclick="logout()" class="btn btn-logout">Logout</button>
+    </div>
   </div>
   
   <div class="controls">
-    <button onclick="addPlayer()" class="btn btn-success">Add Player</button>
+    <button onclick="addAdvancedPlayer()" class="btn btn-success">Add Advanced Player</button>
+    <button onclick="addIntermediatePlayer()" class="btn btn-success">Add Intermediate Player</button>
     <button onclick="deletePlayer()" class="btn btn-danger">Delete Player</button>
+    <button onclick="openPlayerModal()" class="btn btn-warning">Manage Players</button>
+    <button onclick="autoFillCourts()" class="btn btn-info">Auto Fill Courts</button>
     <button onclick="syncWithFirebase()" class="btn btn-sync">Sync with Database</button>
     <button onclick="startNewSession()" class="btn btn-primary">New Session</button>
   </div>
@@ -38,7 +45,7 @@
                 <span class="court-name">G1 (Game)</span>
                 <button class="rotate-btn" onclick="rotateCourtPlayers('G1')" title="Finish game - rotate players">🔄</button>
               </div>
-              <select class="court-type-dropdown" onchange="changeCourtType('G1', this.value)">
+              <select class="court-type-dropdown" onchange="changeCourtType('1', this.value),changeCourtType('5', this.value)">
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
                 <option value="training">Training</option>
@@ -51,7 +58,7 @@
               <div class="court-title">
                 <span class="court-name">W1 (Warm up)</span>
               </div>
-              <select class="court-type-dropdown" onchange="changeCourtType('W1', this.value)">
+              <select class="court-type-dropdown" >
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
                 <option value="training">Training</option>
@@ -64,7 +71,7 @@
               <div class="court-title">
                 <span class="court-name">W2 (Warm up)</span>
               </div>
-              <select class="court-type-dropdown" onchange="changeCourtType('W2', this.value)">
+              <select class="court-type-dropdown" >
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
                 <option value="training">Training</option>
@@ -78,7 +85,7 @@
                 <span class="court-name">G2 (Game)</span>
                 <button class="rotate-btn" onclick="rotateCourtPlayers('G2')" title="Finish game - rotate players">🔄</button>
               </div>
-              <select class="court-type-dropdown" onchange="changeCourtType('G2', this.value)">
+              <select class="court-type-dropdown" onchange="changeCourtType('2', this.value),changeCourtType('6', this.value)">
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
                 <option value="training">Training</option>
@@ -94,7 +101,7 @@
                 <span class="court-name">G3 (Game)</span>
                 <button class="rotate-btn" onclick="rotateCourtPlayers('G3')" title="Finish game - rotate players">🔄</button>
               </div>
-              <select class="court-type-dropdown" onchange="changeCourtType('G3', this.value)">
+              <select class="court-type-dropdown" onchange="changeCourtType('3', this.value),changeCourtType('7', this.value)">
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
                 <option value="training">Training</option>
@@ -107,7 +114,7 @@
               <div class="court-title">
                 <span class="court-name">W3 (Warm up)</span>
               </div>
-              <select class="court-type-dropdown" onchange="changeCourtType('W3', this.value)">
+              <select class="court-type-dropdown" >
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
                 <option value="training">Training</option>
@@ -120,7 +127,7 @@
               <div class="court-title">
                 <span class="court-name">W4 (Warm up)</span>
               </div>
-              <select class="court-type-dropdown" onchange="changeCourtType('W4', this.value)">
+              <select class="court-type-dropdown" >
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
                 <option value="training">Training</option>
@@ -134,7 +141,7 @@
                 <span class="court-name">G4 (Game)</span>
                 <button class="rotate-btn" onclick="rotateCourtPlayers('G4')" title="Finish game - rotate players">🔄</button>
               </div>
-              <select class="court-type-dropdown" onchange="changeCourtType('G4', this.value)">
+              <select class="court-type-dropdown" onchange="changeCourtType('4', this.value),changeCourtType('8', this.value)">
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
                 <option value="training">Training</option>
@@ -200,8 +207,8 @@
   <div id="player-pool-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Player Pool</h2>
-        <span class="close-modal">&times;</span>
+        <h2>Manage Players</h2>
+        <span class="close-modal" onclick="closePlayerModal()">&times;</span>
       </div>
       <div class="modal-body">
         <div class="player-pool-controls">
@@ -209,6 +216,8 @@
           <div class="filter-options">
             <label><input type="checkbox" id="show-active" checked> Show Active</label>
             <label><input type="checkbox" id="show-inactive" checked> Show Inactive</label>
+            <label><input type="checkbox" id="show-advanced" checked> Advanced</label>
+            <label><input type="checkbox" id="show-intermediate" checked> Intermediate</label>
           </div>
         </div>
         <div id="player-pool-list" class="player-pool-list">
@@ -216,9 +225,11 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button id="close-pool-modal" class="btn">Close</button>
+        <button onclick="closePlayerModal()" class="btn">Close</button>
       </div>
     </div>
   </div>
+  
+  <script src="/static/scripts.js"></script>
 </body>
 </html>

@@ -60,13 +60,12 @@ def read_player(player_id: int, db: Session = Depends(get_db)):
 
 @player_router.put("/{player_id}", response_model=schemas.Player)
 def update_player(
-    player_id: int, 
-    qualification: str | None = Query(None), 
-    court_id: int | None = Query(None), 
+    player_id: int,
+    player_update: schemas.PlayerUpdate,
     db: Session = Depends(get_db)
 ):
     """
-    Update a player's information (qualification and/or court assignment)
+    Update a player's information (name, qualification, is_active, and/or court assignment)
     """
     db_player = db.query(Player).filter(Player.id == player_id).first()
     if db_player is None:
@@ -75,20 +74,28 @@ def update_player(
             detail=f"Player with ID {player_id} not found"
         )
 
-    # Update qualification if provided
-    if qualification is not None:
-        db_player.qualification = qualification
+    # Update fields if provided
+    if player_update.name is not None:
+        db_player.name = player_update.name
     
-    # Update court if provided
-    if court_id is not None:
+    if player_update.qualification is not None:
+        db_player.qualification = player_update.qualification
+    
+    if player_update.is_active is not None:
+        db_player.is_active = player_update.is_active
+        # If player is being deactivated, remove them from court
+        if not player_update.is_active and db_player.court_id is not None:
+            db_player.court_id = None
+    
+    if player_update.court_id is not None:
         # Check if court exists
-        court = db.query(Court).filter(Court.id == court_id).first()
+        court = db.query(Court).filter(Court.id == player_update.court_id).first()
         if not court:
             raise HTTPException(
                 status_code=404, 
-                detail=f"Court with ID {court_id} not found"
+                detail=f"Court with ID {player_update.court_id} not found"
             )
-        db_player.court_id = court_id
+        db_player.court_id = player_update.court_id
     
     db.commit()
     db.refresh(db_player)
